@@ -1,0 +1,318 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.page-container {
+  padding: 24px;
+}
+
+.card-shadow {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 24px;
+  border-radius: 12px;
+}
+
+.stat-card.blue {
+  background: linear-gradient(135deg, #667eea 0%, #1677ff 100%);
+}
+
+.stat-card.green {
+  background: linear-gradient(135deg, #34c759 0%, #30bf96 100%);
+}
+
+.stat-card.orange {
+  background: linear-gradient(135deg, #ff9500 0%, #ff7a45 100%);
+}
+
+.stat-card.red {
+  background: linear-gradient(135deg, #ff3b30 0%, #ff4d4f 100%);
+}
+
+.stat-card .title {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.stat-card .value {
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.stat-card .sub {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.timeline-flow {
+  padding: 16px 0;
+}
+
+.flow-item {
+  display: flex;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.flow-item:last-child {
+  margin-bottom: 0;
+}
+
+.flow-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #1677ff;
+  flex-shrink: 0;
+  margin-top: 4px;
+  position: relative;
+  z-index: 2;
+}
+
+.flow-dot.warning {
+  background: #faad14;
+}
+
+.flow-dot.success {
+  background: #52c41a;
+}
+
+.flow-dot.danger {
+  background: #ff4d4f;
+}
+
+.flow-item::after {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 24px;
+  bottom: -24px;
+  width: 2px;
+  background: #e8e8e8;
+  z-index: 1;
+}
+
+.flow-item:last-child::after {
+  display: none;
+}
+
+.flow-content {
+  margin-left: 16px;
+  flex: 1;
+}
+
+.flow-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.flow-title {
+  font-weight: 500;
+  color: #262626;
+}
+
+.flow-time {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.flow-body {
+  color: #595959;
+  font-size: 14px;
+}
+
+.flow-meta {
+  color: #8c8c8c;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.urgent-tag {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.overdue-badge {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.district-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.district-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.district-card .district-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.district-card .district-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.district-card .district-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.district-card .stat-item {
+  text-align: center;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.district-card .stat-item .num {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1677ff;
+}
+
+.district-card .stat-item .label {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-top: 4px;
+}
+
+.district-card .progress-bar {
+  height: 6px;
+  background: #f0f0f0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.district-card .progress-bar .fill {
+  height: 100%;
+  background: linear-gradient(90deg, #52c41a, #1677ff);
+  transition: width 0.5s;
+}
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.login-box {
+  background: white;
+  border-radius: 16px;
+  padding: 48px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.login-title {
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #262626;
+}
+
+.login-subtitle {
+  text-align: center;
+  color: #8c8c8c;
+  margin-bottom: 32px;
+  font-size: 14px;
+}
+
+.role-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.role-card {
+  border: 2px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 16px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.role-card:hover {
+  border-color: #1677ff;
+  background: #e6f4ff;
+}
+
+.role-card.active {
+  border-color: #1677ff;
+  background: #e6f4ff;
+}
+
+.role-card .icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.role-card .name {
+  font-size: 13px;
+  color: #595959;
+}
+
+.badge-overdue {
+  background: #ff4d4f;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  animation: pulse 1.5s infinite;
+}
+
+.badge-rework {
+  background: #faad14;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+}
