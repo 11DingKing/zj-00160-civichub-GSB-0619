@@ -6,31 +6,37 @@ var ROLES = {
   CITY_ADMIN: "city_admin",
   DISTRICT_CENTER: "district_center",
   DEPARTMENT: "department",
-  CITIZEN: "citizen"
+  CITIZEN: "citizen",
 };
 var DATA_SCOPES = {
   ALL: "all",
   DISTRICT: "district",
   DEPARTMENT: "department",
-  SELF: "self"
+  SELF: "self",
 };
 function getUserScope(user) {
   var db = (0, database_1.getDb)();
   var scope = {
     role: user.role,
     userId: user.userId,
-    dataScope: DATA_SCOPES.ALL
+    dataScope: DATA_SCOPES.ALL,
   };
   if (user.role === ROLES.DISTRICT_CENTER) {
-    var userRecord = db.prepare("SELECT district_id FROM users WHERE id = ?").get(user.userId);
+    var userRecord = db
+      .prepare("SELECT district_id FROM users WHERE id = ?")
+      .get(user.userId);
     scope.dataScope = DATA_SCOPES.DISTRICT;
     scope.districtId = userRecord.district_id;
   } else if (user.role === ROLES.DEPARTMENT) {
-    var userRecord = db.prepare("SELECT department_id FROM users WHERE id = ?").get(user.userId);
+    var userRecord = db
+      .prepare("SELECT department_id FROM users WHERE id = ?")
+      .get(user.userId);
     scope.dataScope = DATA_SCOPES.DEPARTMENT;
     scope.departmentId = userRecord.department_id;
   } else if (user.role === ROLES.CITIZEN) {
-    var userRecord = db.prepare("SELECT phone FROM users WHERE id = ?").get(user.userId);
+    var userRecord = db
+      .prepare("SELECT phone FROM users WHERE id = ?")
+      .get(user.userId);
     scope.dataScope = DATA_SCOPES.SELF;
     scope.phone = userRecord.phone;
   }
@@ -53,7 +59,9 @@ function buildDataFilter(user, tableAlias) {
       params.push(scope.departmentId);
       break;
     case DATA_SCOPES.SELF:
-      sql = " AND (".concat(tableAlias, ".submitter_id = ? OR ").concat(tableAlias, ".submitter_phone = ?)");
+      sql = " AND ("
+        .concat(tableAlias, ".submitter_id = ? OR ")
+        .concat(tableAlias, ".submitter_phone = ?)");
       params.push(scope.userId, scope.phone);
       break;
     case DATA_SCOPES.ALL:
@@ -79,8 +87,10 @@ function buildStatsFilter(user, tableAlias) {
       params.push(scope.departmentId);
       break;
     case DATA_SCOPES.SELF:
-      whereClause = " WHERE ".concat(tableAlias, ".submitter_id = ?");
-      params.push(scope.userId);
+      whereClause = " WHERE ("
+        .concat(tableAlias, ".submitter_id = ? OR ")
+        .concat(tableAlias, ".submitter_phone = ?)");
+      params.push(scope.userId, scope.phone);
       break;
     case DATA_SCOPES.ALL:
     default:
@@ -105,6 +115,11 @@ function buildTrendFilter(user, tableAlias) {
       params.push(scope.departmentId);
       break;
     case DATA_SCOPES.SELF:
+      sql = " AND ("
+        .concat(tableAlias, ".submitter_id = ? OR ")
+        .concat(tableAlias, ".submitter_phone = ?)");
+      params.push(scope.userId, scope.phone);
+      break;
     case DATA_SCOPES.ALL:
     default:
       break;
@@ -118,15 +133,17 @@ function checkAppealAccess(user, appeal) {
       return { allowed: true };
     case DATA_SCOPES.DISTRICT:
       return {
-        allowed: appeal.district_id === scope.districtId
+        allowed: appeal.district_id === scope.districtId,
       };
     case DATA_SCOPES.DEPARTMENT:
       return {
-        allowed: appeal.current_department_id === scope.departmentId
+        allowed: appeal.current_department_id === scope.departmentId,
       };
     case DATA_SCOPES.SELF:
       return {
-        allowed: appeal.submitter_id === scope.userId || appeal.submitter_phone === scope.phone
+        allowed:
+          appeal.submitter_id === scope.userId ||
+          appeal.submitter_phone === scope.phone,
       };
     default:
       return { allowed: false };
@@ -139,7 +156,7 @@ function checkSupervisionAccess(user, supervision) {
   }
   if (scope.dataScope === DATA_SCOPES.DISTRICT) {
     return {
-      allowed: supervision.district_id === scope.districtId
+      allowed: supervision.district_id === scope.districtId,
     };
   }
   return { allowed: false };
@@ -166,5 +183,5 @@ exports.PermissionService = {
   buildTrendFilter: buildTrendFilter,
   checkAppealAccess: checkAppealAccess,
   checkSupervisionAccess: checkSupervisionAccess,
-  requireDataScope: requireDataScope
+  requireDataScope: requireDataScope,
 };
