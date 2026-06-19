@@ -10,43 +10,73 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.districtRoutes = void 0;
 var Router = require("express").Router;
 var database_1 = require("../database");
+var permissions_1 = require("../services/permissions");
 exports.districtRoutes = Router();
 exports.districtRoutes.get("/", function (req, res) {
+    var _a;
     var db = (0, database_1.getDb)();
-    var districts = db
-        .prepare("\n    SELECT d.*,\n           COUNT(a.id) as appeal_count,\n           SUM(CASE WHEN a.status = 'completed' THEN 1 ELSE 0 END) as completed_count,\n           SUM(CASE WHEN a.status = 'overdue' THEN 1 ELSE 0 END) as overdue_count\n    FROM districts d\n    LEFT JOIN appeals a ON d.id = a.district_id\n    GROUP BY d.id, d.name, d.code, d.description, d.created_at\n    ORDER BY d.code\n  ")
-        .all();
+    var dataFilter = permissions_1.PermissionService.buildDataFilter(req.user, "a");
+    var joinOnFilter = dataFilter.sql;
+    var joinParams = dataFilter.params;
+    var districts = (_a = db
+        .prepare("\n    SELECT d.*,\n           COUNT(a.id) as appeal_count,\n           SUM(CASE WHEN a.status = 'completed' THEN 1 ELSE 0 END) as completed_count,\n           SUM(CASE WHEN a.status = 'overdue' THEN 1 ELSE 0 END) as overdue_count\n    FROM districts d\n    LEFT JOIN appeals a ON d.id = a.district_id".concat(joinOnFilter, "\n    GROUP BY d.id, d.name, d.code, d.description, d.created_at\n    ORDER BY d.code\n  ")))
+        .all.apply(_a, joinParams);
     var result = districts.map(function (d) { return (__assign(__assign({}, d), { completion_rate: d.appeal_count > 0
             ? Number(((d.completed_count / d.appeal_count) * 100).toFixed(1))
             : 0 })); });
     res.json(result);
 });
 exports.districtRoutes.get("/departments", function (req, res) {
+    var _a;
     var db = (0, database_1.getDb)();
-    var departments = db
-        .prepare("\n    SELECT d.*,\n           COUNT(a.id) as appeal_count,\n           SUM(CASE WHEN a.status = 'completed' THEN 1 ELSE 0 END) as completed_count\n    FROM departments d\n    LEFT JOIN appeals a ON d.id = a.current_department_id\n    GROUP BY d.id, d.name, d.code, d.description, d.created_at\n    ORDER BY d.code\n  ")
-        .all();
+    var dataFilter = permissions_1.PermissionService.buildDataFilter(req.user, "a");
+    var joinOnFilter = dataFilter.sql;
+    var joinParams = dataFilter.params;
+    var departments = (_a = db
+        .prepare("\n    SELECT d.*,\n           COUNT(a.id) as appeal_count,\n           SUM(CASE WHEN a.status = 'completed' THEN 1 ELSE 0 END) as completed_count\n    FROM departments d\n    LEFT JOIN appeals a ON d.id = a.current_department_id".concat(joinOnFilter, "\n    GROUP BY d.id, d.name, d.code, d.description, d.created_at\n    ORDER BY d.code\n  ")))
+        .all.apply(_a, joinParams);
     res.json(departments);
 });
 exports.districtRoutes.get("/:id", function (req, res) {
+    var _a, _b;
     var id = req.params.id;
     var db = (0, database_1.getDb)();
-    var district = db
-        .prepare("\n    SELECT d.*,\n           COUNT(a.id) as appeal_count,\n           SUM(CASE WHEN a.status = 'completed' THEN 1 ELSE 0 END) as completed_count,\n           SUM(CASE WHEN a.status = 'overdue' THEN 1 ELSE 0 END) as overdue_count\n    FROM districts d\n    LEFT JOIN appeals a ON d.id = a.district_id\n    WHERE d.id = ?\n    GROUP BY d.id, d.name, d.code, d.description, d.created_at\n  ")
-        .get(id);
+    var dataFilterForStats = permissions_1.PermissionService.buildDataFilter(req.user, "a");
+    var joinOnFilter = dataFilterForStats.sql;
+    var joinParams = dataFilterForStats.params;
+    var districtQueryParams = __spreadArray(__spreadArray([], joinParams, true), [id], false);
+    var district = (_a = db
+        .prepare("\n    SELECT d.*,\n           COUNT(a.id) as appeal_count,\n           SUM(CASE WHEN a.status = 'completed' THEN 1 ELSE 0 END) as completed_count,\n           SUM(CASE WHEN a.status = 'overdue' THEN 1 ELSE 0 END) as overdue_count\n    FROM districts d\n    LEFT JOIN appeals a ON d.id = a.district_id".concat(joinOnFilter, "\n    WHERE d.id = ?\n    GROUP BY d.id, d.name, d.code, d.description, d.created_at\n  ")))
+        .get.apply(_a, districtQueryParams);
     if (!district) {
         return res.status(404).json({ error: "区县不存在" });
     }
     var users = db
         .prepare("\n    SELECT id, name, role, phone\n    FROM users\n    WHERE district_id = ? AND role = 'district_center'\n  ")
         .all(id);
-    var recentAppeals = db
-        .prepare("\n    SELECT a.*, dept.name as department_name, u.name as handler_name\n    FROM appeals a\n    LEFT JOIN departments dept ON a.current_department_id = dept.id\n    LEFT JOIN users u ON a.current_handler_id = u.id\n    WHERE a.district_id = ?\n    ORDER BY a.created_at DESC\n    LIMIT 10\n  ")
-        .all(id);
+    var dataFilter = permissions_1.PermissionService.buildDataFilter(req.user, "a");
+    var listFilterSql = dataFilter.sql;
+    var listFilterParams = dataFilter.params;
+    var recentAppealsWhere = listFilterSql
+        ? " WHERE a.district_id = ?" + listFilterSql
+        : " WHERE a.district_id = ?";
+    var recentAppealsParams = __spreadArray([id], listFilterParams, true);
+    var recentAppeals = (_b = db
+        .prepare("\n    SELECT a.*, dept.name as department_name, u.name as handler_name\n    FROM appeals a\n    LEFT JOIN departments dept ON a.current_department_id = dept.id\n    LEFT JOIN users u ON a.current_handler_id = u.id\n    ".concat(recentAppealsWhere, "\n    ORDER BY a.created_at DESC\n    LIMIT 10\n  ")))
+        .all.apply(_b, recentAppealsParams);
     res.json({
         district: __assign(__assign({}, district), { completion_rate: district.appeal_count > 0
                 ? Number(((district.completed_count / district.appeal_count) *
